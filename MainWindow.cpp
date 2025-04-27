@@ -36,8 +36,8 @@ void MainWindow::cb_loadBtn() {
     std::ifstream inputStream{fileInput.getText()};
     
     //Testverdier implementert
-    maxFrekvens = static_cast<double>(std::stod(maxLim.getText()));
-    minFrekvens = static_cast<double>(std::stod(minLim.getText()));
+    maxFrekvens = 50;//static_cast<double>(std::stod(maxLim.getText()));
+    minFrekvens = 0;//static_cast<double>(std::stod(minLim.getText()));
 
     if (!inputStream) { // Sjekker om strømmen ble åpnet
         std::cout << "Could not open file" << std::endl;
@@ -361,5 +361,42 @@ void MainWindow::scrollFrekvensplott(){
     }
     return;
     
+}
+void MainWindow::zoomFrekvensplott(){
+    double zoomHastighet = 0.1;
+    TDT4102::Point musepeker = TDT4102::AnimationWindow::get_mouse_coordinates();
+    TDT4102::Point topLeft{300,840};
+    TDT4102::Point bottomRight{2260,1300};
+
+    if( musepeker.x >= topLeft.x &&
+        musepeker.x <= bottomRight.x &&
+        musepeker.y >= topLeft.y &&
+        musepeker.y <= bottomRight.y )
+    {
+        if(TDT4102::AnimationWindow::is_key_down(KeyboardKey::UP)){
+            if (minFrekvens >= 5){
+                minFrekvens -= zoomHastighet;
+                maxFrekvens += zoomHastighet;
+                return;
+            }
+            else if(minFrekvens < 5){
+                maxFrekvens += zoomHastighet*2;
+                return;
+            }
+            
+        }
+        else if(TDT4102::AnimationWindow::is_key_down(KeyboardKey::DOWN)){
+            if (minFrekvens >= 5){
+                minFrekvens += zoomHastighet;
+                maxFrekvens -= zoomHastighet;
+                return;
+            }
+            else if(minFrekvens < 5){
+                maxFrekvens -= zoomHastighet*2;
+                return;
+            }
+            
+        }
+    }
 }
 

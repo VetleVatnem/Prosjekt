@@ -101,6 +101,8 @@ public:
     const double& getMinFrekvens() const;
     const double& getMaxFrekvens() const;
     void scrollFrekvensplott();
+    void zoomFrekvensplott();
+    
 
 //Constructor
     MainWindow(TDT4102::Point position, int width, int height, const std::string& title);
