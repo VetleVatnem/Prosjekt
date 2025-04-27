@@ -1,0 +1,9 @@
+\babel@toc {norsk}{}\relax 
+\contentsline {section}{\numberline {}Problembeskrivelse}{2}{}%
+\contentsline {section}{\numberline {}Diskret fourier transform}{2}{}%
+\contentsline {subsection}{\numberline {}En utledning}{2}{}%
+\contentsline {subsubsection}{\numberline {.1}Basis}{2}{}%
+\contentsline {subsubsection}{\numberline {.2}Indreprodukt}{4}{}%
+\contentsline {subsection}{\numberline {}Implementering}{4}{}%
+\contentsline {section}{\numberline {}Brukergrensesnitt}{6}{}%
+\contentsline {subsection}{\numberline {}Hvordan kjøre programmet.}{6}{}%
