@@ -36,8 +36,8 @@ void MainWindow::cb_loadBtn() {
     std::ifstream inputStream{fileInput.getText()};
     
     //Testverdier implementert
-    maxFrekvens = 50;//static_cast<double>(std::stod(maxLim.getText()));
-    minFrekvens = 0;//static_cast<double>(std::stod(minLim.getText()));
+    maxFrekvens = static_cast<double>(std::stod(maxLim.getText()));
+    minFrekvens = static_cast<double>(std::stod(minLim.getText()));
 
     if (!inputStream) { // Sjekker om strømmen ble åpnet
         std::cout << "Could not open file" << std::endl;
