@@ -12,6 +12,7 @@ int main()
     while(!A.should_close()) {
         A.drawAxes();
         A.scrollFrekvensplott();
+        A.zoomFrekvensplott();
         if(A.getTime().size() > 0){
             A.plot();
         }
