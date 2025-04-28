@@ -11,6 +11,7 @@ fileInput(TDT4102::Point{FinpX, FinpY}, FbtnWidth, btnHeight, "CSV file path"),
 loadBtn(TDT4102::Point{LbtnX, LbtnY}, btnWidth, btnHeight, "Load"),
 minLim(TDT4102::Point{mininpX, mininpY}, FbtnWidth, btnHeight, "Min. freq."),
 maxLim(TDT4102::Point{maxinpX, maxinpY}, FbtnWidth, btnHeight, "Max. freq."),
+channelChoice(TDT4102::Point{ddlPosX, ddlPosY}, FbtnWidth, btnHeight, valg),
 dummyArgument{0},
 width(width),
 height(height)
@@ -24,6 +25,7 @@ height(height)
 
     add(minLim);
     add(maxLim);
+    add(channelChoice);
 }
 
 //Quit button code
@@ -34,7 +36,9 @@ void MainWindow::cb_quit(){
 //Load button code
 void MainWindow::cb_loadBtn() {
     std::ifstream inputStream{fileInput.getText()};
-    
+    for (auto i = valg.size() - 1 ; i > 0 ; i -= 1){
+        valg.pop_back();
+    }
     //Testverdier implementert
     maxFrekvens = static_cast<double>(std::stod(maxLim.getText()));
     minFrekvens = static_cast<double>(std::stod(minLim.getText()));
@@ -47,16 +51,21 @@ void MainWindow::cb_loadBtn() {
     Matrix<std::complex<double>> transformMatrise = DFT(time.size());
     fourierCoeffisients = transformMatrise * channel1;
     
-
     if (time.size() > 1){
         scaleTime();
     }
     if (channel1.size() > 1){
         scaleChannel(1);
+        valg[0] = std::string("Kanal 1");
     }
     if (channel2.size() > 1){
-        //scaleChannel(2);
+        scaleChannel(2);
+        valg.push_back(std::string("Kanal 2"));
     }
+    if(valg.size() >= 2){
+        valg.push_back(std::string("Begge"));
+    }
+    channelChoice.setOptions(valg);
 }
 
 // Functions
@@ -182,16 +191,55 @@ void MainWindow::drawAxes(){
 }
 void MainWindow::plot(){
     //Plott 2
-    for (auto i = 0 ; i < scaledTimeVector.size() - 1; i ++){
-        TDT4102::Point a{300 + i , 370 - (scaledChannel1Vector[i])};
-        TDT4102::Point b{300 + i + 1 , 370 - (scaledChannel1Vector[i + 1])};
-        draw_line(a , b);
-    }
-    drawNumber(time[scaledTimeIndexVector.size() - 1], TDT4102::Point{2300,370});
-    drawNumber(*max_element(channel1.begin(), channel1.end()) , TDT4102::Point{300, 120});
-    drawNumber(*min_element(channel1.begin(), channel1.end()), TDT4102::Point{300,600});
+    std::string choice = channelChoice.getSelectedValue();
+    if(choice == std::string("Kanal 1")){
+        for (auto i = 0 ; i < scaledTimeVector.size() - 1; i ++){
+            TDT4102::Point a{300 + i , 370 - (scaledChannel1Vector[i])};
+            TDT4102::Point b{300 + i + 1 , 370 - (scaledChannel1Vector[i + 1])};
+            draw_line(a , b);
+        }
+        double maxElementChannel1 = *max_element(channel1.begin(), channel1.end());
+        double minElementChannel1 = *min_element(channel1.begin(), channel1.end());
+        drawNumber(maxElementChannel1 , TDT4102::Point{300, 120});
+        drawNumber(minElementChannel1 , TDT4102::Point{300,600});
+    } 
+    else if(choice == std::string("Kanal 2")){
+        for (auto i = 0 ; i < scaledTimeVector.size() - 1; i ++){
+            TDT4102::Point a{300 + i , 370 - (scaledChannel2Vector[i])};
+            TDT4102::Point b{300 + i + 1 , 370 - (scaledChannel2Vector[i + 1])};
+            draw_line(a , b);
+        }
+        double maxElementChannel2 = *max_element(channel2.begin(), channel2.end());
+        double minElementChannel2 = *min_element(channel2.begin(), channel2.end());
+        drawNumber(maxElementChannel2 , TDT4102::Point{300, 120});
+        drawNumber(minElementChannel2 , TDT4102::Point{300,600});
+    } 
+    else if (choice == std::string("Begge")){
+        for (auto i = 0 ; i < scaledTimeVector.size() - 1; i ++){
+            TDT4102::Point a{300 + i , 370 - (scaledChannel1Vector[i])};
+            TDT4102::Point b{300 + i + 1 , 370 - (scaledChannel1Vector[i + 1])};
+            draw_line(a , b);
 
-    
+            TDT4102::Point c{300 + i , 370 - (scaledChannel2Vector[i])};
+            TDT4102::Point d{300 + i + 1 , 370 - (scaledChannel2Vector[i + 1])};
+            draw_line(c , d);
+        }
+        double maxElementChannel1 = *max_element(channel1.begin(), channel1.end());
+        double minElementChannel1 = *min_element(channel1.begin(), channel1.end());
+        double maxElementChannel2 = *max_element(channel2.begin(), channel2.end());
+        double minElementChannel2 = *min_element(channel2.begin(), channel2.end());
+        if(maxElementChannel1 > maxElementChannel2){
+            drawNumber(maxElementChannel1 , TDT4102::Point{300, 120});
+            drawNumber(minElementChannel1 , TDT4102::Point{300,600});
+        }
+        else{
+            drawNumber(maxElementChannel2 , TDT4102::Point{300, 120});
+            drawNumber(minElementChannel2 , TDT4102::Point{300,600});
+        }
+    }  
+    drawNumber(time[scaledTimeIndexVector.size() - 1], TDT4102::Point{2300,370});
+
+
     //Plott 1
     scaleFourierCoeffisient();
     if(scaledAmplitudeVector.size() > 1){
@@ -228,28 +276,61 @@ void MainWindow::scaleTime(){
     }
 }
 void MainWindow::scaleChannel(int channel){
-    if (channel == 1){
-        if (scaledChannel1Vector.size() != 0){
-            scaledChannel1Vector.clear();
-        }
-        scaledChannel1Vector.reserve(scaledTimeIndexVector.size());
-        double forhold = 230.0 / *max_element(channel1.begin() , channel1.end());
-        for (auto i = 0 ; i < scaledTimeIndexVector.size() ; i++){
-            double verdi = forhold * channel1[scaledTimeIndexVector[i]];
-            int verdiUtenDesimal = static_cast<int>(verdi);
-            double diff = verdi - verdiUtenDesimal;
-            if(diff >= 0.5){
-                double justertVerdi = verdi + (1.0 - diff);
-                int plotteVerdi = static_cast<int>(justertVerdi);
-                scaledChannel1Vector.push_back(plotteVerdi);
+    switch(channel){
+        case(1):{
+            if (scaledChannel1Vector.size() != 0){
+                scaledChannel1Vector.clear();
             }
-            else{
-                scaledChannel1Vector.push_back(verdiUtenDesimal);
+            scaledChannel1Vector.reserve(scaledTimeIndexVector.size());
+            channel1Max = *max_element(channel1.begin() , channel1.end());
+            channel1Min = *min_element(channel1.begin() , channel1.end());
+            forholdKanal1 = 230.0 / channel1Max;
+            double forhold;
+            if (channel1Max > channel2Max){
+                forhold = forholdKanal1;
             }
+            for (auto i = 0 ; i < scaledTimeIndexVector.size() ; i++){
+                double verdi = forhold * channel1[scaledTimeIndexVector[i]];
+                int verdiUtenDesimal = static_cast<int>(verdi);
+                double diff = verdi - verdiUtenDesimal;
+                if(diff >= 0.5){
+                    double justertVerdi = verdi + (1.0 - diff);
+                    int plotteVerdi = static_cast<int>(justertVerdi);
+                    scaledChannel1Vector.push_back(plotteVerdi);
+                }
+                else{
+                    scaledChannel1Vector.push_back(verdiUtenDesimal);
+                }
+            }
+            return;
         }
-    }
-    else{
-        std::cout << "Naa gikk noe til helvete" << std::endl;
+        case(2):{
+            if (scaledChannel2Vector.size() != 0){
+                scaledChannel2Vector.clear();
+            }
+            scaledChannel2Vector.reserve(scaledTimeIndexVector.size());
+            channel2Max = *max_element(channel2.begin() , channel2.end());
+            channel2Min = *min_element(channel2.begin() , channel2.end());
+            forholdKanal2 = 230.0 / channel2Max;
+            double forhold;
+            if (channel2Max > channel1Max){
+                forhold = forholdKanal2;
+            }
+            for (auto i = 0 ; i < scaledTimeIndexVector.size() ; i++){
+                double verdi = forhold * channel2[scaledTimeIndexVector[i]];
+                int verdiUtenDesimal = static_cast<int>(verdi);
+                double diff = verdi - verdiUtenDesimal;
+                if(diff >= 0.5){
+                    double justertVerdi = verdi + (1.0 - diff);
+                    int plotteVerdi = static_cast<int>(justertVerdi);
+                    scaledChannel2Vector.push_back(plotteVerdi);
+                }
+                else{
+                    scaledChannel2Vector.push_back(verdiUtenDesimal);
+                }
+            }
+            return;
+        }
     }
 }
 void MainWindow::scaleFourierCoeffisient(){

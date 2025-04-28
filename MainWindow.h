@@ -33,8 +33,17 @@ private:
     std::vector<double> scaledTimeVector;
     std::vector<int> scaledTimeIndexVector;
     std::vector<int> scaledChannel1Vector;
+    std::vector<int> scaledChannel2Vector;
     std::vector<int> scaledAmplitudeVector;
     int fourierCoeffisientsIndexIntervall;
+
+    //Skalerings variabler
+    double forholdKanal1;
+    double forholdKanal2;
+    double channel1Max;
+    double channel1Min;
+    double channel2Max;
+    double channel2Min;
 
     //priv funksjoner
     void scaleTime();
@@ -44,51 +53,47 @@ private:
     void drawNumber(double number, TDT4102::Point position);
     
 public:
-//midlertidig public
-
-
-
-//Window values
+    //Window values
     static constexpr int x = 0;
     static constexpr int y = 0;
 
-//Quit button values
+    //Quit button values
     static constexpr int btnWidth = 70;
     static constexpr int btnHeight = 30;
     int QbtnX = width - btnWidth;
     static constexpr int QbtnY = 0;
-
-//File input values
-    static constexpr int FbtnWidth = 200;
-    static constexpr int FinpX = 0;
-    static constexpr int FinpY = 0;
-
-//Load button values
-    static constexpr int LbtnX = 0;
-    static constexpr int LbtnY = 20 + btnHeight*2; 
-
-//min lim input values
-    static constexpr int mininpX = 0;
-    static constexpr int mininpY = 10 + btnHeight;
-
-//max lim input values
-    static constexpr int maxinpX = FbtnWidth;
-    static constexpr int maxinpY = 10 + btnHeight;
-
-//max and min Lim input
-    TDT4102::TextInput minLim;
-    TDT4102::TextInput maxLim;
-
-//Add quit button
     TDT4102::Button quitBtn;
 	void cb_quit();
 
-//Add load button
+    //File input values
+    static constexpr int FbtnWidth = 200;
+    static constexpr int FinpX = 0;
+    static constexpr int FinpY = 0;
     TDT4102::TextInput fileInput;
+
+    //Load button values
+    static constexpr int LbtnX = 0;
+    static constexpr int LbtnY = 30 + btnHeight*3; 
     TDT4102::Button loadBtn;
     void cb_loadBtn();
 
-//Functions
+    //min lim input values
+    static constexpr int mininpX = 0;
+    static constexpr int mininpY = 10 + btnHeight;
+    TDT4102::TextInput minLim;
+
+    //max lim input values
+    static constexpr int maxinpX = 210;
+    static constexpr int maxinpY = 10 + btnHeight;
+    TDT4102::TextInput maxLim;
+
+    //Dropdownlist values
+    static constexpr int ddlPosX = 0 ;
+    static constexpr int ddlPosY = 20 + btnHeight*2;
+    std::vector<std::string> valg{""};
+    TDT4102::DropdownList channelChoice;
+
+    //Functions
     void readCSV(std::ifstream& inputStream);
     const std::vector<double>& getTime() const;
     const std::vector<double>& getChannel1() const;
@@ -104,7 +109,7 @@ public:
     void zoomFrekvensplott();
     
 
-//Constructor
+    //Constructor
     MainWindow(TDT4102::Point position, int width, int height, const std::string& title);
     int dummyArgument;
 };
