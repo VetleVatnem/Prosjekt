@@ -1,44 +1,18 @@
-<<<<<<< HEAD
 builddir/
 Python/
 debug/
 .vscode/
 subprojects/
 setup/
-Rapport/
 
 meson.build
 
 /builddir/
-=======
-.vscode/
-.idea/
-*.swp
-
-/builddir/
-meson-logs/
-meson-private/
->>>>>>> Zoom
 *.o
 *.a
 *.so
 *.exe
 *.dll
-<<<<<<< HEAD
 
 meson-logs/
 meson-private/
-=======
-*.tmp
-*.log
-*.bin
-*.out
-.DS_Store
-Thumbs.db
-*.bak
-*.old
-*.temp
-meson.build
-
-
->>>>>>> Zoom
