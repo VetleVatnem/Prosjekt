@@ -1,6 +1,6 @@
 #pragma once
 
-//#include <algorithm>
+#include <windows.h>
 #include "AnimationWindow.h"
 #include "widgets/Button.h"
 #include "widgets/TextInput.h"
