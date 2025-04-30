@@ -22,19 +22,23 @@ class Data{
     private:
         //Nyttige verdier til datasettet : Hentet fra lesCSV() fil
         unsigned int antallKanaler; 
-        unsigned int amplitudeKanal1; 
-        unsigned int amplitudeKanal2;
+        double amplitudeKanal1; 
+        double amplitudeKanal2;
         unsigned int sampleFrekvens;
         unsigned int antallSamples;
 
         //Verdier for oppløsning og skalering
             //Skaleringsverdier
             double forholdSignal;
-            double forholdFourier;
+            double forholdFourier1;
+            double forholdFourier2;
+            double forholdFourierBegge;
             unsigned int indeksLow;
             unsigned int indeksHigh;
             double frekvensMin;
             double frekvensHøy;
+            double faseMin;
+            double faseHøy;
             PunktListe punkter;
             
 
@@ -59,27 +63,33 @@ class Data{
         //funksjoner som kun skal brukes av klassen
         void lesCSV();
         void fourierTransform();
-        void genererPunkt();
         void skaler();
+
+        //hjelpefunksjoner
+        int roundToInt(double& tall);
     
     public:
         //Konstruktør
         Data(PunktListe punkter , std::filesystem::path filsti);
 
-        //funksjoner for å hente ut data
+        //funksjoner for å hente ut data og opplysninger
+        const double& getTid() const;
         const std::vector<double>& getkanal(int channel) const;
         const std::vector<std::complex<double>>& getFourierTransform(int channel) const;
+        const int& getSkalertTid() const;
         const std::vector<int>& getSkalertKanal(int channel) const;
         const std::vector<int>& getSkalertAmplitude(int channel) const;
         const std::vector<int>& getSkalertFase(int channel) const;
         const int& getIndexLav() const;
         const int& getIndexHoy() const;
+        double findMaxAbs(const int& start , const int& end) const;
         
         //Funksjoner for å endre data
         void setLowIndex(int& low);
         void setHighIndex(int& high);
         void setFrekvensMin(double& low);
         void setFrekvensHoy(double& high);
+        void scaleFourier(const int& kanal);
 
         //Funksjoner for å skrive data
         void skrivCSV(std::filesystem::path mappe , std::string navn);
