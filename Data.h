@@ -28,13 +28,12 @@ class Data{
                 double tidsIntervall;
             };
 
-            Data* skallklasse;
             std::vector<double> verdier;
             int skaleringIndexIntervall;
             std::vector<int> skalert;
             Konstanter konstanter;
 
-            void skaler();
+            void skaler(Data& skall);
         };
         
         struct Kanal{
@@ -44,12 +43,11 @@ class Data{
                 double forhold;
             };
 
-            Data* skallklasse;
             std::vector<double> verdier;
             std::vector<int> skalerteVerdier;
             Konstanter konstanter;
 
-            void skaler(double& forhold);
+            void skaler(Data& skall , const double& forhold);
         };
 
         struct Transform{
@@ -73,7 +71,6 @@ class Data{
                 double fasePlott;
             };
 
-            Data* skallklasse;
             std::vector<std::complex<double>> fourierTransform;
             std::vector<double> amplitudeSpekter;
             std::vector<double> faseSpekter;
@@ -83,7 +80,7 @@ class Data{
             Min min;
             Forhold forhold;
 
-            void skaler(const double& forholdAmp ,const double& forholdFase);
+            void skaler(Data& skall , const double& forholdAmp ,const double& forholdFase);
         };
 
         //Data beholdere

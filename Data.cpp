@@ -69,7 +69,8 @@ PunktListe::PunktListe(TDT4102::Point opplosning):
 }
 
 /*---------------------------------DATA----------------------------------*/
-/*------------------------------Konstruktør------------------------------*/
+/*------------------------------Konstruktører------------------------------*/
+
 Data::Data(PunktListe punkter , std::filesystem::path filsti):
 punkter(punkter),
 filsti(filsti)
@@ -77,10 +78,17 @@ filsti(filsti)
     lesCSV();
     //fourierTransform();
 };
+
 /*------------------------Funksjoner som tilhører structs----------------*/
 
-void Data::Tid::skaler(){
-    //unsigned int lengdeX = punkter.
+void Data::Tid::skaler(Data& skall){
+    unsigned int lengdeX = skall.punkter.origo2.x - skall.punkter.end2.x;
+}
+void Data::Kanal::skaler(Data& skall , const double& forhold){
+
+}
+void Data::Transform::skaler(Data& skall , const double& forholdAmp , const double& forholdFase){
+    
 }
 
 /*-----------------------------HJELPE FUNKSJONER-------------------------*/
@@ -137,7 +145,6 @@ void Data::lesCSV(){
         }
     }
 
-    
     switch (kolonner)
     {
         case 2:{
