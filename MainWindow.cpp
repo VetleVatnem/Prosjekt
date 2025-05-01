@@ -133,12 +133,7 @@ void MainWindow::readCSV(std::ifstream& inputStream) {
 
 
     //normalices time
-    if (time[0] != 0){
-        double dt = time[2]-time[1];
-        for (auto i = 0; i < time.size() ; i++){
-               time[i] = i*dt;
-        }
-    } 
+ 
 
     N = channel1.size();
     sampleFrekvens = N/time[N-1];

@@ -20,61 +20,101 @@ class PunktListe{
 
 class Data{
     private:
-        //Nyttige verdier til datasettet : Hentet fra lesCSV() fil
-        unsigned int antallKanaler; 
-        double amplitudeKanal1; 
-        double amplitudeKanal2;
-        unsigned int sampleFrekvens;
-        unsigned int antallSamples;
+        //Strukturdefinisjoner med data som hører sammen
+        struct Tid{
+            struct Konstanter{
+                int AntallSamples;
+                double sampleFrekvens;
+                double tidsIntervall;
+            };
 
-        //Verdier for oppløsning og skalering
-            //Skaleringsverdier
-            double forholdSignal;
-            double forholdFourier1;
-            double forholdFourier2;
-            double forholdFourierBegge;
-            unsigned int indeksLow;
-            unsigned int indeksHigh;
-            double frekvensMin;
-            double frekvensHøy;
-            double faseMin;
-            double faseHøy;
-            PunktListe punkter;
-            
+            Data* skallklasse;
+            std::vector<double> verdier;
+            int skaleringIndexIntervall;
+            std::vector<int> skalert;
+            Konstanter konstanter;
 
-        //Datasett og skalerte versjoner av dem
-        std::vector<double> tid;
-        std::vector<double> kanal1;
-        std::vector<double> kanal2;
-        std::vector<std::complex<double>> fourierTransform1;
-        std::vector<std::complex<double>> fourierTransform2;
-        std::vector<int> skalertTidIndex;
-        std::vector<int> skalertTid;
-        std::vector<int> skalertKanal1;
-        std::vector<int> skalertKanal2;
-        std::vector<int> skalertAmplitude1;
-        std::vector<int> skalertAmplitude2;
-        std::vector<int> skalertFase1;
-        std::vector<int> skalertFase2;
+            void skaler();
+        };
         
+        struct Kanal{
+            struct Konstanter{
+                double maksAmplitude;
+                double antallVerdier;
+                double forhold;
+            };
+
+            Data* skallklasse;
+            std::vector<double> verdier;
+            std::vector<int> skalerteVerdier;
+            Konstanter konstanter;
+
+            void skaler(double& forhold);
+        };
+
+        struct Transform{
+            //Verdier
+            struct Max{
+                double AmplitudeFrekvens;
+                int AmplitideIndeks;
+                double FaseFrekvens;
+                int FaseIndeks;
+            };
+
+            struct Min{
+                double nullFaseFrekvens;
+                int nullFaseIndeks;
+                double minFaseFrekvens;
+                int minFaseIndeks;
+            };
+
+            struct Forhold{
+                double amplitudePlott;
+                double fasePlott;
+            };
+
+            Data* skallklasse;
+            std::vector<std::complex<double>> fourierTransform;
+            std::vector<double> amplitudeSpekter;
+            std::vector<double> faseSpekter;
+            std::vector<int> skalertAmplitudeSpekter;
+            std::vector<int> skalertFaseSpekter;
+            Max max;
+            Min min;
+            Forhold forhold;
+
+            void skaler(const double& forholdAmp ,const double& forholdFase);
+        };
+
+        //Data beholdere
+        std::unique_ptr<Data::Tid> tid;
+        std::unique_ptr<Data::Kanal> En;
+        std::unique_ptr<Data::Kanal> To;
+        std::unique_ptr<Data::Transform> FEn;
+        std::unique_ptr<Data::Transform> FTo;
+    
         //Filstier og filnavn
         std::filesystem::path filsti;
+
+        //Punkter på skjermen
+        PunktListe punkter;
 
         //funksjoner som kun skal brukes av klassen
         void lesCSV();
         void fourierTransform();
         void skaler();
 
-        //hjelpefunksjoner
-        int roundToInt(double& tall);
-    
+        //Hjelpe funksjoner
+        void fyllKanal(Kanal& kanal);
+        std::vector<double> konverterTilVektor(const std::string& linje);
+
     public:
         //Konstruktør
         Data(PunktListe punkter , std::filesystem::path filsti);
 
         //funksjoner for å hente ut data og opplysninger
-        const double& getTid() const;
-        const std::vector<double>& getkanal(int channel) const;
+        const std::vector<double>& getTid() const;
+        const std::vector<double>& getKanal(int channel) const;
         const std::vector<std::complex<double>>& getFourierTransform(int channel) const;
         const int& getSkalertTid() const;
         const std::vector<int>& getSkalertKanal(int channel) const;

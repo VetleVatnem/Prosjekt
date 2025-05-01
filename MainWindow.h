@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Data.h"
 #include <windows.h>
 #include "AnimationWindow.h"
 #include "widgets/Button.h"

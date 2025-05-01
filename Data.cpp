@@ -75,20 +75,50 @@ punkter(punkter),
 filsti(filsti)
 {
     lesCSV();
-    fourierTransform();
-    skaler();
+    //fourierTransform();
 };
-/*-----------------------------HJELPE FUNKSJONER-------------------------*/
-int Data::roundToInt(double& tall){
-    return static_cast<int>(std::round(tall));
+/*------------------------Funksjoner som tilhører structs----------------*/
+
+void Data::Tid::skaler(){
+    //unsigned int lengdeX = punkter.
 }
+
+/*-----------------------------HJELPE FUNKSJONER-------------------------*/
+
+void Data::fyllKanal(Kanal& kanal){
+    double max = std::round(*max_element(kanal.verdier.begin() , kanal.verdier.end()));
+    double min = std::abs(std::round(*min_element(kanal.verdier.begin() , kanal.verdier.end())));
+    if(max > min){kanal.konstanter.maksAmplitude = max;}
+    else{kanal.konstanter.maksAmplitude = min;}
+    kanal.konstanter.forhold = punkter.origo2.y/kanal.konstanter.maksAmplitude;
+    kanal.konstanter.antallVerdier = kanal.verdier.size();
+    //kanal.skaler(kanal.konstanter.forhold);
+}
+std::vector<double> Data::konverterTilVektor(const std::string& linje){
+    std::vector<double> rad;
+    std::stringstream ss(linje);
+    std::string tall;
+
+    while (std::getline(ss, tall, ',')){
+        try{
+            rad.push_back(std::stod(tall));
+        }
+        catch(const std::invalid_argument&){
+            rad.clear();
+            break;
+        }
+    }
+    return rad;
+}
+
+
 /*-----------------------------PRIVATE FUNKSJONER------------------------*/
 
 void Data::lesCSV(){
     std::string linje;
-    int rader;
-    int kolonner;
+    std::vector<double> rad;
     std::ifstream inputstream{filsti};
+    int kolonner;
 
     if(filsti.extension() != ".csv"){
         std::cout << "Filen er ikke en .csv fil." << std::endl;
@@ -99,149 +129,95 @@ void Data::lesCSV(){
         return;
     }
 
-    while (std::getline(inputstream, linje)) {
-        std::stringstream ss(linje);
-        std::string tall;
-        std::vector<double> rad;
-
-        while (std::getline(ss, tall, ',')){
-            try{
-                rad.push_back(std::stod(tall));
-            }
-            catch(const std::invalid_argument&){
-                rad.clear();
-                break;
-            }
-        }
-        if(antallKanaler == 0){
-            antallKanaler = rad.size() - 1;
-        }
-
-        if (rad.size() >= 2) {
-            tid.push_back(rad[0]);      
-            kanal1.push_back(rad[1]) ;
-            if (antallKanaler == 2) {            
-                kanal2.push_back(rad[2]);
-            };
+    while(std::getline(inputstream, linje)){
+        kolonner = konverterTilVektor(linje).size();
+        if(kolonner)
+        {
+            break;
         }
     }
 
-    double dt = tid[2] - tid[1];
-    sampleFrekvens = 1/dt;
-    antallSamples = tid.size();
     
-    for (auto i = 0 ; i < tid.size() ; i++){
-        tid[i] = i*dt;
+    switch (kolonner)
+    {
+        case 2:{
+            tid = std::make_unique<Data::Tid>();
+            En = std::make_unique<Data::Kanal>();
+            FEn = std::make_unique<Data::Transform>();
+            unsigned int antallrader = 1;
+
+            while(std::getline(inputstream , linje)){
+                rad = konverterTilVektor(linje);
+                
+                if(rad.size() != 2){
+                    std::cout << "Filen mangler verdier på rad " << antallrader << std::endl;
+                }
+                else{
+                    tid->verdier.push_back(rad[0]);
+                    En->verdier.push_back(rad[1]);
+                }
+                antallrader += 1;
+            }
+            break;
+        }
+        case 3:{
+            tid = std::make_unique<Data::Tid>();
+            En = std::make_unique<Data::Kanal>();
+            To = std::make_unique<Data::Kanal>();
+            FEn = std::make_unique<Data::Transform>();
+            FTo = std::make_unique<Data::Transform>();
+            unsigned int antallrader = 1;
+
+            while(std::getline(inputstream , linje)){
+                rad = konverterTilVektor(linje);
+                
+                if(rad.size() != 3){
+                    std::cout << "Filen mangler verdier på rad " << antallrader << std::endl;
+                }
+                else{
+                    tid->verdier.push_back(rad[0]);
+                    En->verdier.push_back(rad[1]);
+                    To->verdier.push_back(rad[2]);   
+                }
+                antallrader += 1;
+            }
+            break;
+        }
+        default:{
+            std::cout << "Ugyldig antall kolonner i CSV filen" << std::endl;
+            break;
+        }
     }
-    double posamp = *max_element(kanal1.begin() , kanal1.end());
-    double negamp = std::abs(*min_element(kanal1.begin() , kanal1.end()));
-    if (posamp > negamp){ amplitudeKanal1 = posamp; }
-    else { amplitudeKanal1 = negamp; }
     
-    if(antallKanaler == 2){
-        posamp = *max_element(kanal2.begin() , kanal2.end());
-        negamp = std::abs(*max_element(kanal2.begin() , kanal2.end()));
-        if(posamp > negamp){ amplitudeKanal2 = posamp ; }
-        else{ amplitudeKanal2 = negamp ; }
-    }
+    if(tid != nullptr){
+        tid->konstanter.AntallSamples = tid->verdier.size();
+        double dt = tid->verdier[2]-tid->verdier[1];
+        for (auto i = 0; i < tid->konstanter.AntallSamples ; i++){
+                tid->verdier[i] = i*dt;
+        }
+        tid->konstanter.sampleFrekvens = 1/dt;
+        tid->konstanter.tidsIntervall = tid->verdier[tid->konstanter.AntallSamples - 1];
+        tid->skaler();
+    }else{throw std::runtime_error("Tidsvektoren ble ikke initialisert!");}
+    
+    if(En != nullptr){
+        fyllKanal(*En);
+    }else{throw std::runtime_error("Kanal 1 ble ikke initialisert!");}
+
+    if(To != nullptr && kolonner == 3){
+        fyllKanal(*To);
+    }else if(To == nullptr && kolonner == 3){throw std::runtime_error("Kanal 2 ble ikke initialisert!");}
 }
-void Data::fourierTransform(){
-    Matrix matrise = DFT(antallSamples);
-    switch(antallKanaler){
-        case(1):{
-            fourierTransform1 = std::move(matrise*kanal1);
-        }
-        case(2):{
-            fourierTransform1 = std::move(matrise*kanal1);
-            fourierTransform2 = std::move(matrise*kanal2);
-        }
-    }
+
+/*-----------------------------PUBLIC FUNKSJONER-------------------------*/
+const std::vector<double>& Data::getTid() const{
+    return this->tid->verdier;
 }
-void Data::skaler(){
-    
-    //Finner forholdstall til signalplott
-    if(antallKanaler == 2){
-        if (amplitudeKanal2 > amplitudeKanal1){
-            forholdSignal = (punkter.origo2.y - punkter.top2.y)/std::ceil(amplitudeKanal2);
-        }
-        else{
-            forholdSignal = (punkter.origo2.y - punkter.top2.y)/std::ceil(amplitudeKanal1);
-        }
-    }
-    
-    //Finner forholdstall til fouriertransformen
-    auto maksAbs1 = *max_element(fourierTransform1.begin() , fourierTransform1.end() ,
-        []
-        (double a , double b)
-        {return std::abs(a) < std::abs(b);}
-    );
-    forholdFourier1 = std::abs(maksAbs1);
-    forholdFourierBegge = std::abs(maksAbs1);
-
-    if(antallKanaler == 2){
-        auto maksAbs2 = *max_element(fourierTransform2.begin() , fourierTransform2.end() ,
-        []
-        (double a , double b)
-        {return std::abs(a) < std::abs(b);}
-        );
-
-        forholdFourier2 = std::abs(maksAbs2);
-        if(forholdFourier2 > forholdFourier1){forholdFourierBegge = forholdFourier2;}
-    }
-
-
-    //Skalering av fouriertransform
-    unsigned int size = fourierTransform1.size();
-    skalertAmplitude1.resize(size);
-    skalertAmplitude2.resize(size);
-
-    //Skalering av Tid, kanal 1 og kanal 2
-    unsigned int lengdeX = punkter.end2.x - punkter.origo2.x;
-    unsigned int tidLengde = tid.size();
-    unsigned int indeksIntervall;
-
-    if(tidLengde > lengdeX){
-        indeksIntervall = static_cast<int>(std::round(tidLengde/static_cast<double>(lengdeX)));
-        skalertTid.resize(tidLengde/indeksIntervall);
-        skalertKanal1.resize(tidLengde/indeksIntervall);
-        if(antallKanaler > 1){skalertKanal2.resize(tidLengde/indeksIntervall);}
-
-        for (auto i = 0 ; i < lengdeX ; i++){
-            skalertTid[i] = tid[i*indeksIntervall] + punkter.origo2.x;
-            skalertKanal1[i] = 
-                punkter.origo2.y - 
-                static_cast<int>(std::round(forholdSignal*kanal1[i*indeksIntervall]));
-            
-            if(antallKanaler > 1){
-                skalertKanal2[i] = 
-                    punkter.origo2.y -
-                    static_cast<int>(std::round(forholdSignal*kanal2[i*indeksIntervall]));
-            }
-        }
-    }
-    else if(tidLengde < lengdeX){
-        std::cout << "Dette er ikke implementert enda" << std::endl;
+const std::vector<double>& Data::getKanal(int channel) const{
+    if(channel == 1){
+        return this->En->verdier;
     }
     else{
-        for (auto i = 0 ; i < lengdeX ; i++){
-            skalertTid[i] = tid[i] + punkter.origo2.x;
-            skalertKanal1[i] = 
-                punkter.origo2.y - 
-                static_cast<int>(std::round(forholdSignal*kanal1[i]));
-            
-            if(antallKanaler > 1){
-                skalertKanal2[i] = 
-                    punkter.origo2.y -
-                    static_cast<int>(std::round(forholdSignal*kanal2[i]));
-            }
-        }  
+        return this->To->verdier;
     }
-
-    //Mangler skalering av fourier
-}
-
-/*-----------------------------PUBCLIC FUNKSJONER------------------------*/
-
-double Data::findMaxAbs(const int& start , const int& end , ) const {
-
 }
