@@ -4,17 +4,20 @@
 #include <AnimationWindow.h>
 #include <fstream>
 
-class PunktListe{
-    public:
-        TDT4102::Point opplosning;
-        TDT4102::Point origo1;
-        TDT4102::Point origo2;
-        TDT4102::Point end1;
-        TDT4102::Point end2;
-        TDT4102::Point top1;
-        TDT4102::Point top2;
-        TDT4102::Point bottom1;
-        TDT4102::Point bottom2;
+struct PunktListe{
+    TDT4102::Point opplosning;
+    TDT4102::Point origo1;
+    TDT4102::Point origo2;
+    TDT4102::Point end1;
+    TDT4102::Point end2;
+    TDT4102::Point top1;
+    TDT4102::Point top2;
+    TDT4102::Point bottom1;
+    TDT4102::Point bottom2;
+    TDT4102::Point bottomEnd1;
+    TDT4102::Point bottomEnd2;
+
+    PunktListe();
     PunktListe(TDT4102::Point opplosning);
 };
 
@@ -29,25 +32,28 @@ class Data{
             };
 
             std::vector<double> verdier;
-            int skaleringIndexIntervall;
-            std::vector<int> skalert;
+            std::vector<unsigned int> skaleringIndexIntervaller;
+            std::vector<unsigned int> horisontalPiklser;
+            std::vector<std::vector<double>> skalerte;
             Konstanter konstanter;
 
-            void skaler(Data& skall);
+            void skaler(unsigned int lengdeX);
         };
         
         struct Kanal{
             struct Konstanter{
                 double maksAmplitude;
                 double antallVerdier;
-                double forhold;
+                std::vector<double> forhold;
+                double yAkseTopp;
+                double yAkseBunn;
             };
 
             std::vector<double> verdier;
-            std::vector<int> skalerteVerdier;
+            std::vector<std::vector<int>> skalerte;
             Konstanter konstanter;
 
-            void skaler(Data& skall , const double& forhold);
+            void skaler(double forhold);
         };
 
         struct Transform{
@@ -80,26 +86,23 @@ class Data{
             Min min;
             Forhold forhold;
 
-            void skaler(Data& skall , const double& forholdAmp ,const double& forholdFase);
+            void skaler(double forholdAmp ,double forholdFase);
         };
 
-        //Data beholdere
-        std::unique_ptr<Data::Tid> tid;
-        std::unique_ptr<Data::Kanal> En;
-        std::unique_ptr<Data::Kanal> To;
-        std::unique_ptr<Data::Transform> FEn;
-        std::unique_ptr<Data::Transform> FTo;
-    
         //Filstier og filnavn
         std::filesystem::path filsti;
 
         //Punkter på skjermen
         PunktListe punkter;
 
+        //Data beholdere
+        std::unique_ptr<Data::Tid> tid;
+        std::vector<std::unique_ptr<Data::Kanal>> kanaler;
+        std::vector<std::unique_ptr<Data::Transform>> transformer;
+        
         //funksjoner som kun skal brukes av klassen
         void lesCSV();
         void fourierTransform();
-        void skaler();
 
         //Hjelpe funksjoner
         void fyllKanal(Kanal& kanal);
@@ -107,26 +110,26 @@ class Data{
 
     public:
         //Konstruktør
-        Data(PunktListe punkter , std::filesystem::path filsti);
+        Data(const PunktListe punkter , std::filesystem::path filsti);
+        Data() = default;
 
-        //funksjoner for å hente ut data og opplysninger
-        const std::vector<double>& getTid() const;
-        const std::vector<double>& getKanal(int channel) const;
-        const std::vector<std::complex<double>>& getFourierTransform(int channel) const;
-        const int& getSkalertTid() const;
-        const std::vector<int>& getSkalertKanal(int channel) const;
-        const std::vector<int>& getSkalertAmplitude(int channel) const;
-        const std::vector<int>& getSkalertFase(int channel) const;
-        const int& getIndexLav() const;
-        const int& getIndexHoy() const;
-        double findMaxAbs(const int& start , const int& end) const;
-        
-        //Funksjoner for å endre data
-        void setLowIndex(int& low);
-        void setHighIndex(int& high);
-        void setFrekvensMin(double& low);
-        void setFrekvensHoy(double& high);
-        void scaleFourier(const int& kanal);
+        // Tillat flytting
+        Data(Data&&) noexcept = default;
+        Data& operator=(Data&&) noexcept = default;
+    
+        //Fjerne kopi
+        Data(const Data&) = delete;
+        Data& operator=(const Data&) = delete;
+
+        //Verdier
+        bool klar = false;
+
+        //Hente ut skalerings verdier
+        const std::filesystem::path getFilsti();
+        const std::vector<double>& getKanalForhold(unsigned int kanal);
+        const std::vector<int>& getKanal(const unsigned int& kanal , double forhold);
+        const std::vector<double>& getTid(const unsigned int& lengdeX);
+        const unsigned int getIndexIntervall(const unsigned int& lengdeX);
 
         //Funksjoner for å skrive data
         void skrivCSV(std::filesystem::path mappe , std::string navn);
