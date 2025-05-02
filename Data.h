@@ -1,8 +1,10 @@
 #pragma once
 
-#include "Fourier.h"
 #include <AnimationWindow.h>
 #include <fstream>
+#include <cmath>
+#include <complex>
+#include <iostream>
 
 struct PunktListe{
     TDT4102::Point opplosning;
@@ -77,7 +79,8 @@ class Data{
                 double fasePlott;
             };
 
-            std::vector<std::complex<double>> fourierTransform;
+            std::vector<std::complex<double>> verdier;
+            std::vector<double> frekvens;
             std::vector<double> amplitudeSpekter;
             std::vector<double> faseSpekter;
             std::vector<int> skalertAmplitudeSpekter;
@@ -99,7 +102,7 @@ class Data{
         std::unique_ptr<Data::Tid> tid;
         std::vector<std::unique_ptr<Data::Kanal>> kanaler;
         std::vector<std::unique_ptr<Data::Transform>> transformer;
-        
+
         //funksjoner som kun skal brukes av klassen
         void lesCSV();
         void fourierTransform();
@@ -113,11 +116,11 @@ class Data{
         Data(const PunktListe punkter , std::filesystem::path filsti);
         Data() = default;
 
-        // Tillat flytting
+        //Flytting av eierskap
         Data(Data&&) noexcept = default;
         Data& operator=(Data&&) noexcept = default;
     
-        //Fjerne kopi
+        //Hindring av kopi
         Data(const Data&) = delete;
         Data& operator=(const Data&) = delete;
 

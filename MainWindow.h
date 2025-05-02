@@ -15,13 +15,8 @@ private:
     void drawNumber(double number, TDT4102::Point position);
     void drawAxes();
     void plot();
-    void scrollFrekvensplott();
-    void zoomFrekvensplott();
     
 public:
-    //Window values
-    static constexpr int x = 0;
-    static constexpr int y = 0;
 
     //Quit button values
     static constexpr int btnWidth = 70;

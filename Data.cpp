@@ -80,6 +80,7 @@ punkter(punkter),
 filsti(filsti)
 {
     lesCSV();
+    fourierTransform();
 };
 
 /*------------------------Funksjoner som tilhører structs----------------*/
@@ -184,6 +185,7 @@ void Data::lesCSV(){
         tid = std::make_unique<Data::Tid>();
         for(auto i = 0 ; i < kolonner-1 ; i++){
             kanaler.push_back(std::make_unique<Data::Kanal>());
+            transformer.push_back(std::make_unique<Data::Transform>());
         }
         unsigned int antallrader = 1;
 
@@ -221,6 +223,25 @@ void Data::lesCSV(){
         }else{throw std::runtime_error("I klassen Data, funksjon lesCSV er en peker i vektoren kanaler en nullptr.");}
     }
     klar = true;
+}
+void Data::fourierTransform(){
+    if(this->kanaler.size() > 0){
+        for(auto a = 0 ; a < this->kanaler.size() ; a++){
+            std::vector<double> kanal = this->kanaler[a]->verdier;
+            double N = static_cast<double>(kanal.size());
+            for(auto i = 0 ; i < kanal.size() ; i++){
+                std::complex<double> sum = 0;
+                for(auto j = 0 ; j < kanal.size() ; j++){
+                    sum += exp(std::complex<double>(0 , (- 2 * M_PI * i * j) / N)) * kanal[j];
+                }
+                this->transformer[a]->verdier.push_back(sum);
+                this->transformer[a]->amplitudeSpekter.push_back(std::abs(sum));
+                this->transformer[a]->faseSpekter.push_back(std::arg(sum));
+                this->transformer[a]->frekvens.push_back((i/N) * this->tid->konstanter.sampleFrekvens);
+            }
+        }
+    }else{throw std::out_of_range("Kanalene ble ikke initialisert. Dermed kan ikke Transformen utfores.");}
+        
 }
 
 /*-----------------------------PUBLIC FUNKSJONER-------------------------*/
