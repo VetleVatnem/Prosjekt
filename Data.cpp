@@ -60,17 +60,17 @@ PunktListe::PunktListe(TDT4102::Point opplosning):
     bottomEnd2  =   { X2 , Y2 + amp2 } ;
 }
 PunktListe::PunktListe():
-opplosning{0,0},
-origo1{0,0},
-origo2{0,0},
-end1{0,0},
-end2{0,0},
-top1{0,0},
-top2{0,0},
-bottom1{0,0},
-bottomEnd1{0,0},
-bottom2{0,0},
-bottomEnd2{0,0}
+    opplosning{0,0},
+    origo1{0,0},
+    origo2{0,0},
+    end1{0,0},
+    end2{0,0},
+    top1{0,0},
+    top2{0,0},
+    bottom1{0,0},
+    bottomEnd1{0,0},
+    bottom2{0,0},
+    bottomEnd2{0,0}
 {}
 /*---------------------------------DATA----------------------------------*/
 /*-----------------------------Konstruktører-----------------------------*/
