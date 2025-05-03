@@ -1,26 +1,56 @@
 #pragma once
 
+#include <Image.h>
 #include <AnimationWindow.h>
 #include <fstream>
 #include <cmath>
 #include <complex>
 #include <iostream>
 
-struct PunktListe{
-    TDT4102::Point opplosning;
-    TDT4102::Point origo1;
-    TDT4102::Point origo2;
-    TDT4102::Point end1;
-    TDT4102::Point end2;
-    TDT4102::Point top1;
-    TDT4102::Point top2;
-    TDT4102::Point bottom1;
-    TDT4102::Point bottom2;
-    TDT4102::Point bottomEnd1;
-    TDT4102::Point bottomEnd2;
+struct Bilder{
+    TDT4102::Image meny{"Bilder/Collosseum.jpg"};
+    TDT4102::Image button{"Bilder/button.jpg"};
+    //TDT4102::Image config1{};
+    //TDT4102::Image config2{};
+    //TDT4102::Image config3{};
+};
 
-    PunktListe();
-    PunktListe(TDT4102::Point opplosning);
+struct PunktOppslag{
+    struct Config{
+        struct Plott{
+            TDT4102::Point origo;
+            TDT4102::Point bunn;
+            TDT4102::Point top;
+            TDT4102::Point end;
+            TDT4102::Point endBunn;
+            TDT4102::Point endTop;
+            
+            Plott(int nummer);
+            void skaler(double faktor);
+            
+            private:
+                void genererPunkt(TDT4102::Point TL , TDT4102::Point BR);
+        };
+        std::vector<Plott> plott;
+        Config(int config , TDT4102::Point opplosning);
+    };
+    
+    struct Meny{
+        struct Button{
+            TDT4102::Point topLeft;
+            TDT4102::Point bottomRight;
+            Button(int knapp , TDT4102::Point& opplosning);
+        };
+        std::vector<Button> knapper;
+        Meny(TDT4102::Point& opplosning);
+        Meny() = default;
+    };
+    
+    Meny meny;
+    std::vector<Config> configs;
+    TDT4102::Point opplosning;
+
+    PunktOppslag(TDT4102::Point opplosning);
 };
 
 class Data{
@@ -96,7 +126,7 @@ class Data{
         std::filesystem::path filsti;
 
         //Punkter på skjermen
-        PunktListe punkter;
+        PunktOppslag punkter;
 
         //Data beholdere
         std::unique_ptr<Data::Tid> tid;
@@ -113,7 +143,7 @@ class Data{
 
     public:
         //Konstruktør
-        Data(const PunktListe punkter , std::filesystem::path filsti);
+        Data(const PunktOppslag& punkter , std::filesystem::path filsti);
         Data() = default;
 
         //Flytting av eierskap
@@ -131,6 +161,7 @@ class Data{
         const std::filesystem::path getFilsti();
         const std::vector<double>& getKanalForhold(unsigned int kanal);
         const std::vector<int>& getKanal(const unsigned int& kanal , double forhold);
+        const unsigned int& getAntallKanaler();
         const std::vector<double>& getTid(const unsigned int& lengdeX);
         const unsigned int getIndexIntervall(const unsigned int& lengdeX);
 

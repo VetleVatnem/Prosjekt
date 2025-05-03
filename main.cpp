@@ -16,11 +16,10 @@ int main()
     std::cout << data.getKanal(1 , 240).size() << std::endl;
     */
     
-    MainWindow A(TDT4102::Point(0,0) , TDT4102::Point(1920,1080) , "DFT");
+    MainWindow A(TDT4102::Point(1280,0) , TDT4102::Point(2560,1440) , "DFT");
     while(!A.should_close()) {
         A.runGraphics();
         A.next_frame();
     }
-    
     return 0;
 }

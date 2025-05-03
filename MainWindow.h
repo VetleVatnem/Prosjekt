@@ -11,31 +11,28 @@
 
 class MainWindow : public TDT4102::AnimationWindow{
 private:
-    PunktListe punkter;
+
+    PunktOppslag punkter;
+
+    //Plotting
     void drawNumber(double number, TDT4102::Point position);
     void drawAxes();
-    void plot();
+    void plottKanal(unsigned int kanal);
+
+    //Meny
+    unsigned int state;
+    unsigned int layoutvalue;
+    bool checkInBetween(TDT4102::Point TL , TDT4102::Point BR , TDT4102::Point check);
+    void drawButton(TDT4102::Point TL , TDT4102::Point BR , std::string tekst);
+    void meny();
+    void layout();
+    Bilder bilder;
+    
     
 public:
 
-    //Quit button values
-    static constexpr int btnWidth = 70;
-    static constexpr int btnHeight = 30;
-    int QbtnX = punkter.opplosning.x - btnWidth;
-    static constexpr int QbtnY = 0;
-    TDT4102::Button quitBtn;
 	void cb_quit();
 
-    //File input values
-    static constexpr int FbtnWidth = 200;
-    static constexpr int FinpX = 0;
-    static constexpr int FinpY = 0;
-    TDT4102::TextInput fileInput;
-
-    //Load button values
-    static constexpr int LbtnX = 0;
-    static constexpr int LbtnY = 30 + btnHeight*3; 
-    TDT4102::Button loadBtn;
     std::vector<std::unique_ptr<Data>> data;
     void cb_loadBtn();
 

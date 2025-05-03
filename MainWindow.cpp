@@ -6,18 +6,11 @@
 //Constructor
 MainWindow::MainWindow(TDT4102::Point position, TDT4102::Point opplosning, const std::string& title):
 AnimationWindow{position.x, position.y, opplosning.x , opplosning.y , title},
-quitBtn(TDT4102::Point{QbtnX, QbtnY}, btnWidth, btnHeight, "Quit"),
-fileInput(TDT4102::Point{FinpX, FinpY}, FbtnWidth, btnHeight, "CSV file path"),
-loadBtn(TDT4102::Point{LbtnX, LbtnY}, btnWidth, btnHeight, "Load"),
 dummyArgument{0},
-punkter(PunktListe(opplosning))
+punkter(PunktOppslag(opplosning))
 {   
-	add(quitBtn);
-    quitBtn.setCallback(std::bind(&MainWindow::cb_quit, this));
-
-    add(fileInput);
-    add(loadBtn);
-    loadBtn.setCallback(std::bind(&MainWindow::cb_loadBtn, this));
+    state = 0;
+    layoutvalue = 0;
 }
 
 //Quit button code
@@ -27,46 +20,93 @@ void MainWindow::cb_quit(){
 
 //Load button code
 void MainWindow::cb_loadBtn() {
-    std::filesystem::path filsti = fileInput.getText();
-    std::ifstream inputStream{filsti};
-    data.emplace_back(std::make_unique<Data>(punkter , filsti));
+    //std::filesystem::path filsti = fileInput.getText();
+    //std::ifstream inputStream{filsti};
+    //data.emplace_back(std::make_unique<Data>(punkter , filsti));
 }
 
-// Functions
+//Plotting
 void MainWindow::drawAxes(){
-        //Akser for plot 1
-        draw_line(punkter.bottom1 , punkter.bottomEnd1);
-        draw_line(punkter.bottom1 , punkter.top1);
-    
-        //Akser for plot 2
-        draw_line(punkter.origo2 , punkter.end2);
-        draw_line(punkter.bottom2 , punkter.top2);
+
 }
-void MainWindow::plot(){
-    //Plott 1
+void MainWindow::plottKanal(unsigned int kanal){
 
-    //Plott 2
-    unsigned int pikselLengde = punkter.end2.x - punkter.origo2.x;
-    unsigned int dx = data[0]->getIndexIntervall(pikselLengde);
-    std::vector<int> Y = data[0]->getKanal(1 , data[0]->getKanalForhold(1)[0]);
-
-    for(auto i = 0 ; i < pikselLengde - 1 ; i++){
-        TDT4102::Point a = {punkter.origo2.x + i , punkter.origo2.y - Y[i * dx]};
-        TDT4102::Point b = {punkter.origo2.x + i + 1 , punkter.origo2.y - Y[(i + 1) * dx]};
-        draw_line(a,b);
-    }
 }
 void MainWindow::drawNumber(double number, TDT4102::Point position){
     std::ostringstream stream;
     stream << std::fixed << std::setprecision(2) << number;
     draw_text(position, std::to_string(number), TDT4102::Color::black);
 }
-void MainWindow::runGraphics(){
-    drawAxes();
-    if(data.size() != 0){
-        if(data[0]->klar){
-            plot();
-        }    
+
+//Statemaskin
+void MainWindow::layout(){
+    draw_rectangle(TDT4102::Point{0,0} , punkter.opplosning.x , punkter.opplosning.y , TDT4102::Color::khaki);
+    
+}
+void MainWindow::drawButton(TDT4102::Point TL ,TDT4102::Point BR , std::string tekst ){
+    int dx = BR.x-TL.x;
+    int dy = BR.y-TL.y;
+    draw_image(TL , bilder.button , dx , dy);
+    draw_text(TL , tekst , TDT4102::Color() , 30);
+    return;
+}
+bool MainWindow::checkInBetween(TDT4102::Point TL , TDT4102::Point BR , TDT4102::Point check){
+    if(check.x > TL.x && check.x < BR.x && check.y < BR.y && check.y > TL.y ){
+        return true;
     }
-        
+    else{return false;}
+}
+void MainWindow::meny(){
+    bool buttonOnePressed = false;
+    bool buttonTwoPressed = false;
+    bool buttonThreePressed = false;
+    bool buttonFourPressed = false;
+
+    std::vector<PunktOppslag::Meny::Button> knappkoordinater = punkter.meny.knapper;
+    std::vector<std::string> navn = {"QUIT" , "LAYOUT" , "PLOTTING" , "FILTER MODE"};
+
+    int antallKnapper = 4;
+    draw_image(TDT4102::Point{0,0} , bilder.meny , punkter.opplosning.x , punkter.opplosning.y);
+
+    for(auto i = 0 ; i < antallKnapper ; i++){
+        TDT4102::Point TL = knappkoordinater[i].topLeft;
+        TDT4102::Point BR = knappkoordinater[i].bottomRight;
+        TDT4102::Point mus = TDT4102::AnimationWindow::get_mouse_coordinates();
+        if(checkInBetween(TL , BR , mus)){
+            draw_rectangle(TDT4102::Point{TL.x-5 , TL.y-5} , BR.x-TL.x + 10 , BR.y-TL.y +10 , TDT4102::Color::white_smoke , TDT4102::Color::black);
+        }
+        drawButton(knappkoordinater[i].topLeft , knappkoordinater[i].bottomRight , navn[i]);
+    }
+
+    TDT4102::Point mus = TDT4102::AnimationWindow::get_mouse_coordinates();
+    if(checkInBetween(knappkoordinater[0].topLeft , knappkoordinater[0].bottomRight , mus) && TDT4102::AnimationWindow::is_left_mouse_button_down()){
+        close();
+    }
+    if(checkInBetween(knappkoordinater[1].topLeft , knappkoordinater[1].bottomRight , mus) && TDT4102::AnimationWindow::is_left_mouse_button_down()){
+        state = 1;
+    }
+
+}
+void MainWindow::runGraphics(){
+    switch(state)
+    {
+        case(0):
+        {
+            meny();
+            break;
+        }
+        case(1):
+        {
+            layout();
+            break;
+        }
+        case(2):
+        {
+            break;
+        }
+        case(3):
+        {
+            break;
+        }
+    }       
 }
